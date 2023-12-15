@@ -21,13 +21,13 @@ export const ContactList = () => {
     <ul>
       {contactsArr.length !== 0 &&
         contactsArr.map(contact => {
-          const { id, name, phone } = contact;
+          const { id, name, number } = contact;
           return (
             <ContactListItem
               key={id}
               contactId={id}
               contactName={name}
-              contactNumber={phone}
+              contactNumber={number}
               deleteContact={hanldeDeleteContact}
             />
           );

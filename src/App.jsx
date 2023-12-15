@@ -1,27 +1,60 @@
-import { ContactForm } from 'components/ContactForm/ContactForm';
-import { ContactList } from 'components/ContactList/ContactList';
-import { Filter } from 'components/Filter/Filter';
 import css from './App.module.css';
-
-import { useSelector } from 'react-redux';
-import { selectError, selectIsLoading } from './redux/contactsSelectors';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Loader } from './components/Loader/Loader';
+import Navigation from 'components/Navigation/Navigation';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { userRefresh } from './redux/authReducer';
+import RestictedRoute from 'components/RestictedRoute/RestictedRoute';
+import PrivateRoute from 'components/PrivateRoute/PrivateRoute';
+import { Loader } from 'components/Loader/Loader';
+
+const Home = lazy(() => import('pages/Home'));
+const Register = lazy(() => import('pages/Register'));
+const Login = lazy(() => import('pages/Login'));
+const Contacts = lazy(() => import('pages/Contacts'));
 
 export const App = () => {
-  const isLoading = useSelector(selectIsLoading);
-  const error = useSelector(selectError);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(userRefresh());
+  }, [dispatch]);
 
   return (
-    <div className={css.wrapper}>
-      <h1 className={css.formTitle}>Phonebook</h1>
-      <ContactForm />
-      <h2 className={css.formTitle}>Contacts</h2>
-      <Filter />
-      <ContactList />
-      {isLoading && <Loader />}
-      {error && <ToastContainer />}
-    </div>
+    <>
+      <Navigation />
+      <div className={css.wrapper}>
+        <Suspense fallback={<Loader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/register"
+              element={
+                <RestictedRoute>
+                  <Register />
+                </RestictedRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <RestictedRoute>
+                  <Login />
+                </RestictedRoute>
+              }
+            />
+            <Route
+              path="/contacts"
+              element={
+                <PrivateRoute>
+                  <Contacts />
+                </PrivateRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Suspense>
+      </div>
+    </>
   );
 };
